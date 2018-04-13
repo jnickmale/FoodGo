@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "780346257447",
+    "firebase_url": "https://orderingapp-d8cfb.firebaseio.com",
+    "project_id": "orderingapp-d8cfb",
+    "storage_bucket": "orderingapp-d8cfb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:780346257447:android:d2ca2dc1e0112cf6",
+        "android_client_info": {
+          "package_name": "edu.temple.foodgo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "780346257447-ko8s78hbh5s14kb3shp8opv4dk9u9ksu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.temple.foodgo",
+            "certificate_hash": "04ba8ead4b111f4abc46a3e433b51aec1212038f"
+          }
+        },
+        {
+          "client_id": "780346257447-t4rroesr9m60hgdudibirkfgmp0mdchn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOgXZaX9aaabVS9AEnfChojiY0UhtQJ6E"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "780346257447-ceea4f5laai1njs0l2u66n5ohjpa05im.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.GriffinHealyCo.OrderingApp"
+              }
+            },
+            {
+              "client_id": "780346257447-t4rroesr9m60hgdudibirkfgmp0mdchn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
