@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -30,14 +31,15 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
 
-        final String email = ((AutoCompleteTextView)findViewById(R.id.email)).getText().toString();
-        final String username = ((AutoCompleteTextView)findViewById(R.id.username)).getText().toString();
-        final String password = ((EditText)findViewById(R.id.password)).getText().toString();
+
 
         Button signInButton = (Button)findViewById(R.id.email_sign_in_button);
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String email = ((AutoCompleteTextView)findViewById(R.id.email)).getText().toString();
+                String username = ((AutoCompleteTextView)findViewById(R.id.username)).getText().toString();
+                String password = ((EditText)findViewById(R.id.password)).getText().toString();
                 signIn(email, username, password);
             }
         });
@@ -46,6 +48,9 @@ public class LoginActivity extends AppCompatActivity {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String email = ((AutoCompleteTextView)findViewById(R.id.email)).getText().toString();
+                String username = ((AutoCompleteTextView)findViewById(R.id.username)).getText().toString();
+                String password = ((EditText)findViewById(R.id.password)).getText().toString();
                 registerUser(email, username, password);
             }
         });
@@ -90,8 +95,6 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
-
-                        // ...
                     }
                 });
     }
@@ -103,6 +106,7 @@ public class LoginActivity extends AppCompatActivity {
      * @param password
      */
     public void registerUser(String email, String username, String password){
+        final String usernameConstant = username;
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -111,6 +115,12 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("registration attempt", "createUserWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
+                            if(user != null) {
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(usernameConstant).build();
+                                user.updateProfile(profileUpdates);
+                            }
+
                             updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -119,8 +129,6 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
-
-                        // ...
                     }
                 });
     }

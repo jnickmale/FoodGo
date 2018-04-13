@@ -23,9 +23,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RegLoginActivity"
-            android:label="@string/title_activity_reg_login" />
-        <activity
             android:name=".RestaurantActivity"
             android:label="@string/title_activity_restaurant"
             android:theme="@style/AppTheme.NoActionBar"></activity>
