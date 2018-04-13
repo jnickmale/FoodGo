@@ -40,7 +40,18 @@ public class LoginActivity extends AppCompatActivity {
                 String email = ((AutoCompleteTextView)findViewById(R.id.email)).getText().toString();
                 String username = ((AutoCompleteTextView)findViewById(R.id.username)).getText().toString();
                 String password = ((EditText)findViewById(R.id.password)).getText().toString();
-                signIn(email, username, password);
+                if(email.equals("")){
+                    Toast.makeText(LoginActivity.this, "Please enter an email.",
+                            Toast.LENGTH_SHORT).show();
+                }else if(username.equals("")){
+                    Toast.makeText(LoginActivity.this, "Please enter a username.",
+                            Toast.LENGTH_SHORT).show();
+                }else if(password.equals("")){
+                    Toast.makeText(LoginActivity.this, "Please enter a password.",
+                            Toast.LENGTH_SHORT).show();
+                }else {
+                    signIn(email, username, password);
+                }
             }
         });
 
@@ -51,7 +62,18 @@ public class LoginActivity extends AppCompatActivity {
                 String email = ((AutoCompleteTextView)findViewById(R.id.email)).getText().toString();
                 String username = ((AutoCompleteTextView)findViewById(R.id.username)).getText().toString();
                 String password = ((EditText)findViewById(R.id.password)).getText().toString();
-                registerUser(email, username, password);
+                if(email.equals("")){
+                    Toast.makeText(LoginActivity.this, "Please enter an email.",
+                            Toast.LENGTH_SHORT).show();
+                }else if(username.equals("")){
+                    Toast.makeText(LoginActivity.this, "Please enter a username.",
+                            Toast.LENGTH_SHORT).show();
+                }else if(password.equals("")){
+                    Toast.makeText(LoginActivity.this, "Please enter a password.",
+                            Toast.LENGTH_SHORT).show();
+                }else {
+                    registerUser(email, username, password);
+                }
             }
         });
     }

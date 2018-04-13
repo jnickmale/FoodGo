@@ -1,5 +1,6 @@
 package edu.temple.foodgo;
 
+import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,17 +26,26 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-public class RestaurantActivity extends AppCompatActivity {
+public class RestaurantActivity extends AppCompatActivity implements RestaurantsFragment.OnRestaurantInformationListener{
     private FirebaseUser user;
-
+    private DataSnapshot restaurantData;
+    private RestaurantsFragment restFrag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_restaurant);
 
+        restFrag = null;
         user = FirebaseAuth.getInstance().getCurrentUser();
+        restaurantData = null;
+        connectFirebaseDatabase();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -45,9 +56,9 @@ public class RestaurantActivity extends AppCompatActivity {
         spinner.setAdapter(new MyAdapter(
                 toolbar.getContext(),
                 new String[]{
-                        "Section 1",
-                        "Section 2",
-                        "Section 3",
+                        "Restaurants",
+                        "Cart",
+                        "Order",
                 }));
 
         spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -55,9 +66,22 @@ public class RestaurantActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // When the given dropdown item is selected, show its contents in the
                 // container view.
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                        .commit();
+                if(position == 0) {
+                    restFrag = RestaurantsFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.container, restFrag)
+                            .commit();
+                }else if(position == 1){
+                    restFrag = null;
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.container, PlaceholderFragment.newInstance("Your cart will be displayed here"))
+                            .commit();
+                }else if(position == 2){
+                    restFrag = null;
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.container, PlaceholderFragment.newInstance("Ordering functionality will be displayed here"))
+                            .commit();
+                }
             }
 
             @Override
@@ -85,9 +109,18 @@ public class RestaurantActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == R.id.action_logout){
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRestaurantInformation(HoldsRestaurantInformation restaurantInformationHolder) {
+        restaurantInformationHolder.setRestaurantInformation(restaurantData);
     }
 
 
@@ -137,7 +170,7 @@ public class RestaurantActivity extends AppCompatActivity {
          * The fragment argument representing the section number for this
          * fragment.
          */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+        private static final String ARG_MESSAGE = "message";
 
         public PlaceholderFragment() {
         }
@@ -146,10 +179,10 @@ public class RestaurantActivity extends AppCompatActivity {
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
+        public static PlaceholderFragment newInstance(String message) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            args.putString(ARG_MESSAGE, message);
             fragment.setArguments(args);
             return fragment;
         }
@@ -159,8 +192,36 @@ public class RestaurantActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_restaurant, container, false);
             TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            textView.setText(getArguments().getString(ARG_MESSAGE));
             return rootView;
+        }
+    }
+
+    public void connectFirebaseDatabase(){
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("menus");
+
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                updateRestaurantData(dataSnapshot);
+                Log.d("Read database attempt", "Value is: " + dataSnapshot.getValue());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("Read database attempt", "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    public void updateRestaurantData(DataSnapshot data){
+        restaurantData = data;
+        if(restFrag != null){
+            restFrag.updateData();
         }
     }
 }
