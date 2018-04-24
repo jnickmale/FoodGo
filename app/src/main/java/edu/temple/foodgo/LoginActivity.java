@@ -89,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
     private void updateUI(FirebaseUser currentUser){
         if(currentUser != null){
             //start the main activity with the currentUsers info
-            Intent intent = new Intent(LoginActivity.this, RestaurantActivity.class);
+            Intent intent = new Intent(LoginActivity.this, QRScanActivity.class);
             startActivity(intent);
         }
     }

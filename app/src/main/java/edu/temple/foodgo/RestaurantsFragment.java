@@ -74,7 +74,7 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
         mListener.onRestaurantInformation(this);
         if(restaurantData != null){
             ViewGroup insertPoint = (ViewGroup) getActivity().findViewById(R.id.menuItems);
-            for (DataSnapshot ds : restaurantData.child("restaurant1").child("food").getChildren()){
+            for (DataSnapshot ds : restaurantData.child("food").getChildren()){
                 LinearLayout ll = new LinearLayout(getActivity());
                 ll.setOrientation(LinearLayout.HORIZONTAL);
                 ll.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));

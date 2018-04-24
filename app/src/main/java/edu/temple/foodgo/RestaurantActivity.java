@@ -24,6 +24,8 @@ import android.content.res.Resources.Theme;
 
 import android.widget.TextView;
 
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -36,15 +38,21 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
     private FirebaseUser user;
     private DataSnapshot restaurantData;
     private RestaurantsFragment restFrag;
+    private String restaurantID;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_restaurant);
 
+        restaurantID = getIntent().getStringExtra("restaurantID");
+
         restFrag = null;
-        user = FirebaseAuth.getInstance().getCurrentUser();
         restaurantData = null;
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
         connectFirebaseDatabase();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -199,7 +207,7 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
 
     public void connectFirebaseDatabase(){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("menus");
+        DatabaseReference myRef = database.getReference("menus").child(restaurantID);
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -224,4 +232,6 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
             restFrag.updateData();
         }
     }
+
+
 }
