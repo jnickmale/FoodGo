@@ -123,7 +123,7 @@ public class QRScanActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 TextView textView = (TextView)(QRScanActivity.this).findViewById(R.id.QRInfoView);
-                if(textView.getText().toString().equals(R.string.QRInfoDefault)){
+                if(textView.getText().toString().equals(getResources().getString(R.string.QRInfoDefault))){
                     Toast.makeText(QRScanActivity.this, R.string.QRInfoDefault, Toast.LENGTH_LONG).show();
                 }else{
                     Intent intent = new Intent(QRScanActivity.this, RestaurantActivity.class);
