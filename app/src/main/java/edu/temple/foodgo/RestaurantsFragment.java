@@ -95,6 +95,7 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String menuID = Integer.toString(position);
                 setCurrentMenu(menuID);
+                updateData();
             }
 
             @Override
@@ -125,6 +126,7 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
             ViewGroup insertPoint = null;
             if(this.isAdded()) {
                 insertPoint = (ViewGroup) getActivity().findViewById(R.id.menuItems);
+                insertPoint.removeAllViews();
             }
             shownMenuItems = new ArrayList<OrderItem>();
             for (DataSnapshot ds : restaurantData.child("menus").child(menuSelected).child("food").getChildren()){

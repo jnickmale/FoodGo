@@ -1,6 +1,7 @@
 package edu.temple.foodgo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -94,7 +95,6 @@ public class OrderFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 placeOrder();
-                int i =5;
             }
         });
         final View v = view;
@@ -148,6 +148,9 @@ public class OrderFragment extends Fragment {
         order.child("orderNum").getRef().setValue(id);
         order.child("orderTotal").getRef().setValue(((TextView)view.findViewById(R.id.totalValueView)).getText().toString());
 
+        Intent intent = new Intent(OrderFragment.this.getContext(), StatusActivity.class);
+        intent.putExtra("orderNum", id);
+        startActivity(intent);
     }
 
     public double calculateTotal(){
@@ -170,12 +173,12 @@ public class OrderFragment extends Fragment {
         return subtotal;
     }
 
-    private void updateSubtotalView(){
+    public void updateSubtotalView(){
         ((TextView)view.findViewById(R.id.subtotalValueView)).setText(Double.toString(calculateSubtotal()));
 
     }
 
-    private void updateTotalView(){
+    public void updateTotalView(){
         ((TextView)view.findViewById(R.id.totalValueView)).setText(Double.toString(calculateTotal()));
     }
 

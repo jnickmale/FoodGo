@@ -141,6 +141,8 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
     @Override
     public void onRemoveButton(int position) {
         order.remove(position);
+        ((OrderFragment)orderFrag).updateSubtotalView();
+        ((OrderFragment)orderFrag).updateTotalView();
     }
 
     @Override
