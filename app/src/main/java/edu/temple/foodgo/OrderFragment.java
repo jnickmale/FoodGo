@@ -148,6 +148,12 @@ public class OrderFragment extends Fragment {
         order.child("orderNum").getRef().setValue(id);
         order.child("orderTotal").getRef().setValue(((TextView)view.findViewById(R.id.totalValueView)).getText().toString());
 
+        for(OrderItem item: this.order){
+            String index = Long.toString(order.child("food").getChildrenCount());
+            order.child("food").child(index).child("name").getRef().setValue(item.getName());
+            order.child("food").child(index).child("price").getRef().setValue(item.getPrice());
+        }
+
         Intent intent = new Intent(OrderFragment.this.getContext(), StatusActivity.class);
         intent.putExtra("orderNum", id);
         startActivity(intent);
