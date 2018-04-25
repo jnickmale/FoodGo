@@ -4,18 +4,28 @@ import android.app.ActionBar;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+
+import edu.temple.foodgo.dummy.DummyContent;
 
 
 /**
@@ -26,12 +36,16 @@ import com.squareup.picasso.Picasso;
  * Use the {@link RestaurantsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RestaurantsFragment extends Fragment implements HoldsRestaurantInformation{
+public class RestaurantsFragment extends Fragment implements HoldsRestaurantInformation, OrderFragment.OnListFragmentInteractionListener{
 
 
     private DataSnapshot restaurantData;
+    private String menuSelected;
+    private ArrayList<String> menus;
+    private SpinnerAdapter menusAdapter;
 
     private OnRestaurantInformationListener mListener;
+    private DataSnapshot menuData;
 
     public RestaurantsFragment() {
         // Required empty public constructor
@@ -54,6 +68,8 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         restaurantData = null;
+        menus = null;
+        menuSelected = "0";
     }
 
     @Override
@@ -64,6 +80,36 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
     }
 
     @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Spinner spinner;
+        spinner = (Spinner)getActivity().findViewById(R.id.menusSpinner);
+        if(menus == null) {
+            menus = new ArrayList<String>();
+        }
+        menusAdapter = new ArrayAdapter<String>((Context)getActivity(), android.R.layout.simple_spinner_item, menus);
+        spinner.setAdapter(menusAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String menuID = Integer.toString(position);
+                setCurrentMenu(menuID);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
+
+
+    private void setCurrentMenu(String menuID){
+        menuSelected = menuID;
+    }
+
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         updateData();
@@ -71,10 +117,12 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
 
 
     public void updateData(){
-        mListener.onRestaurantInformation(this);
-        if(restaurantData != null){
+        if(mListener != null) {
+            mListener.onRestaurantInformation(this);
+        }
+        if(restaurantData != null && menuSelected != null){
             ViewGroup insertPoint = (ViewGroup) getActivity().findViewById(R.id.menuItems);
-            for (DataSnapshot ds : restaurantData.child("food").getChildren()){
+            for (DataSnapshot ds : restaurantData.child("menus").child(menuSelected).child("food").getChildren()){
                 LinearLayout ll = new LinearLayout(getActivity());
                 ll.setOrientation(LinearLayout.HORIZONTAL);
                 ll.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -106,6 +154,7 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
                 // insert into main view
                 insertPoint.addView(ll);
             }
+            insertPoint.invalidate();
         }
     }
 
@@ -129,8 +178,37 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
     @Override
     public void setRestaurantInformation(DataSnapshot restaurantData) {
         this.restaurantData = restaurantData;
+        if(this.restaurantData != null) {
+            setMenuData(restaurantData);
+        }
     }
 
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
+    }
+
+    @Override
+    public void onRemoveButton(int position) {
+
+    }
+
+
+    public void setMenuData(DataSnapshot restaurantData){
+        menuData = restaurantData.child("menus");
+        if(menus == null){
+            menus = new ArrayList<String>();
+        }
+        menus.clear();
+        for(DataSnapshot d: menuData.getChildren()){
+            menus.add((String)d.child("menuName").getValue());
+        }
+        ((ArrayAdapter)menusAdapter).notifyDataSetChanged();
+    }
+
+    /**
+     * Interface for demarking that an object holds restaurant information
+     */
     public interface OnRestaurantInformationListener {
         void onRestaurantInformation(HoldsRestaurantInformation restaurantInformationHolder);
     }

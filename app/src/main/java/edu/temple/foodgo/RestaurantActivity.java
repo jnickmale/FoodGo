@@ -37,7 +37,7 @@ import com.google.firebase.database.ValueEventListener;
 public class RestaurantActivity extends AppCompatActivity implements RestaurantsFragment.OnRestaurantInformationListener{
     private FirebaseUser user;
     private DataSnapshot restaurantData;
-    private RestaurantsFragment restFrag;
+    private Fragment restFrag;
     private String restaurantID;
 
 
@@ -64,9 +64,8 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
         spinner.setAdapter(new MyAdapter(
                 toolbar.getContext(),
                 new String[]{
-                        "Restaurants",
-                        "Cart",
-                        "Order",
+                        "Menus",
+                        "Order"
                 }));
 
         spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -82,12 +81,7 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
                 }else if(position == 1){
                     restFrag = null;
                     getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.container, PlaceholderFragment.newInstance("Your cart will be displayed here"))
-                            .commit();
-                }else if(position == 2){
-                    restFrag = null;
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.container, PlaceholderFragment.newInstance("Ordering functionality will be displayed here"))
+                            .replace(R.id.container, PlaceholderFragment.newInstance("Your order will be displayed here"))
                             .commit();
                 }
             }
@@ -207,7 +201,7 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
 
     public void connectFirebaseDatabase(){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("menus").child(restaurantID);
+        DatabaseReference myRef = database.getReference("restaurants").child(restaurantID);
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -229,7 +223,7 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
     public void updateRestaurantData(DataSnapshot data){
         restaurantData = data;
         if(restFrag != null){
-            restFrag.updateData();
+            ((RestaurantsFragment)restFrag).updateData();
         }
     }
 
