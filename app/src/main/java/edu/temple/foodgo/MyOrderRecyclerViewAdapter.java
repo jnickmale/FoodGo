@@ -1,6 +1,5 @@
 package edu.temple.foodgo;
 
-import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,11 +8,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import edu.temple.foodgo.OrderFragment.OnListFragmentInteractionListener;
-import edu.temple.foodgo.dummy.DummyContent.DummyItem;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class MyOrderRecyclerViewAdapter extends RecyclerView.Adapter<MyOrderRecyclerViewAdapter.ViewHolder>{
@@ -36,24 +35,18 @@ public class MyOrderRecyclerViewAdapter extends RecyclerView.Adapter<MyOrderRecy
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final int pos = position;
-        //holder.mItem = mValues.get(position);
+        holder.mItem = (OrderItem)mValues.get(position);
        // holder.mIdView.setText(mValues.get(position).id);
-        //holder.mContentView.setText(mValues.get(position).content);
-
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem);
-                }
-            }
-        });
+        //holder.mCostView.setText(mValues.get(position).content);
+        Picasso.get().load(holder.mItem.getImageURL()).resize(128, 128).into(holder.mImageView);
+        holder.mNameView.setText(holder.mItem.getName());
+        holder.mCostView.setText(holder.mItem.getPrice());
+        holder.removeButton.setText("Remove Item");
         holder.removeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //mListener.onRemoveButton(mValues.get(pos));
+                mListener.onRemoveButton(pos);
+                notifyDataSetChanged();
             }
         });
     }
@@ -66,23 +59,23 @@ public class MyOrderRecyclerViewAdapter extends RecyclerView.Adapter<MyOrderRecy
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final ImageView mImageView;
-        public final TextView mIdView;
-        public final TextView mContentView;
+        public final TextView mNameView;
+        public final TextView mCostView;
         public final Button removeButton;
-        public DummyItem mItem;
+        public OrderItem mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mImageView = (ImageView) view.findViewById(R.id.item_name);
-            mIdView = (TextView) view.findViewById(R.id.item_name);
-            mContentView = (TextView) view.findViewById(R.id.item_cost);
+            mImageView = (ImageView) view.findViewById(R.id.item_image);
+            mNameView = (TextView) view.findViewById(R.id.item_name);
+            mCostView = (TextView) view.findViewById(R.id.item_cost);
             removeButton = (Button) view.findViewById(R.id.remove_button);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + mCostView.getText() + "'";
         }
     }
 }

@@ -2,13 +2,23 @@ package edu.temple.foodgo;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import edu.temple.foodgo.dummy.DummyContent;
 import edu.temple.foodgo.dummy.DummyContent.DummyItem;
@@ -29,6 +39,7 @@ public class OrderFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private ArrayList<OrderItem> order;
+    private View view;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -37,8 +48,6 @@ public class OrderFragment extends Fragment {
     public OrderFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
     public static OrderFragment newInstance(int columnCount) {
         OrderFragment fragment = new OrderFragment();
         Bundle args = new Bundle();
@@ -51,25 +60,23 @@ public class OrderFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        order = new ArrayList<OrderItem>();
+        order = ((OnListFragmentInteractionListener)getActivity()).getOrder();
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
     }
 
-    private void loadOrder(){
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_order_list, container, false);
+        this.view = view;
 
         // Set the adapter
-        if (view instanceof RecyclerView) {
+        if (view.findViewById(R.id.list) instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.list);
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
@@ -80,6 +87,38 @@ public class OrderFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        view.findViewById(R.id.placeOrderButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                placeOrder();
+                int i =5;
+            }
+        });
+        final View v = view;
+        EditText tipText = ((EditText)view.findViewById(R.id.tipValueView));
+        tipText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                TextView textView = ((TextView)v.findViewById(R.id.totalValueView));
+                        textView.setText(Double.toString(calculateTotal()));
+            }
+        });
+        updateSubtotalView();
+        updateTotalView();
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -99,8 +138,51 @@ public class OrderFragment extends Fragment {
     }
 
 
+    public void placeOrder(){
+        //DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+        DataSnapshot restaurantData = mListener.getRestaurantData();
+        DataSnapshot orders = restaurantData.child("orders");
+        String id = Long.toString(orders.getChildrenCount());
+        DataSnapshot order = orders.child(id);
+        order.child("userID").getRef().setValue(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+        order.child("orderNum").getRef().setValue(id);
+        order.child("orderTotal").getRef().setValue(((TextView)view.findViewById(R.id.totalValueView)).getText().toString());
+
+    }
+
+    public double calculateTotal(){
+        double subtotal = Double.parseDouble(((TextView)view.findViewById(R.id.subtotalValueView)).getText().toString());
+        double tip;
+        try {
+            tip = Double.parseDouble(((EditText) view.findViewById(R.id.tipValueView)).getText().toString());
+        }catch(NumberFormatException e){
+            tip = 0;
+        }
+        double total = subtotal + tip;
+        return total;
+    }
+
+    public double calculateSubtotal(){
+        double subtotal = 0;
+        for(OrderItem item:order){
+            subtotal += Double.parseDouble(item.getPrice());
+        }
+        return subtotal;
+    }
+
+    private void updateSubtotalView(){
+        ((TextView)view.findViewById(R.id.subtotalValueView)).setText(Double.toString(calculateSubtotal()));
+
+    }
+
+    private void updateTotalView(){
+        ((TextView)view.findViewById(R.id.totalValueView)).setText(Double.toString(calculateTotal()));
+    }
+
+
     public interface OnListFragmentInteractionListener {
-        void onListFragmentInteraction(DummyItem item);
         void onRemoveButton(int position);
+        ArrayList<OrderItem> getOrder();
+        DataSnapshot getRestaurantData();
     }
 }

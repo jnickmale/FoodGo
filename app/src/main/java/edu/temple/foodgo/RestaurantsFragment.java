@@ -36,13 +36,14 @@ import edu.temple.foodgo.dummy.DummyContent;
  * Use the {@link RestaurantsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RestaurantsFragment extends Fragment implements HoldsRestaurantInformation, OrderFragment.OnListFragmentInteractionListener{
+public class RestaurantsFragment extends Fragment implements HoldsRestaurantInformation{
 
 
     private DataSnapshot restaurantData;
     private String menuSelected;
     private ArrayList<String> menus;
     private SpinnerAdapter menusAdapter;
+    private ArrayList<OrderItem> shownMenuItems;
 
     private OnRestaurantInformationListener mListener;
     private DataSnapshot menuData;
@@ -121,40 +122,58 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
             mListener.onRestaurantInformation(this);
         }
         if(restaurantData != null && menuSelected != null){
-            ViewGroup insertPoint = (ViewGroup) getActivity().findViewById(R.id.menuItems);
-            for (DataSnapshot ds : restaurantData.child("menus").child(menuSelected).child("food").getChildren()){
-                LinearLayout ll = new LinearLayout(getActivity());
-                ll.setOrientation(LinearLayout.HORIZONTAL);
-                ll.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-                ImageView foodImageView = new ImageView(getActivity());
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-                layoutParams.weight = 1;
-                foodImageView.setLayoutParams(layoutParams);
-                Picasso.get().load(ds.child("foodImageURL").getValue().toString()).resize(128, 128).into(foodImageView);
-
-                TextView infoView = new TextView(getActivity());
-                LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                layoutParams.setMargins(10, 0, 10, 20);
-                infoView.setLayoutParams(layoutParams2);
-                infoView.setText(ds.child("name").getValue().toString() +  "\n" + ds.child("description").getValue().toString() + "\n$" +ds.child("price").getValue().toString());
-                infoView.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
-
-                Button addToCartButton = new Button(getActivity());
-                addToCartButton.setText("Add to Cart");
-                addToCartButton.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                infoView.setTextSize(TypedValue.COMPLEX_UNIT_SP,24);
-
-
-                ll.addView(foodImageView);
-                ll.addView(infoView);
-                ll.addView(addToCartButton);
-
-
-                // insert into main view
-                insertPoint.addView(ll);
+            ViewGroup insertPoint = null;
+            if(this.isAdded()) {
+                insertPoint = (ViewGroup) getActivity().findViewById(R.id.menuItems);
             }
-            insertPoint.invalidate();
+            shownMenuItems = new ArrayList<OrderItem>();
+            for (DataSnapshot ds : restaurantData.child("menus").child(menuSelected).child("food").getChildren()){
+                final DataSnapshot snapshot = ds;
+                shownMenuItems.add(new OrderItem(ds));
+
+                if(this.isAdded()) {
+                    LinearLayout ll = new LinearLayout(getActivity());
+                    ll.setOrientation(LinearLayout.HORIZONTAL);
+                    ll.setPadding(0, 0, 0, 16);
+                    ll.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                    ImageView foodImageView = new ImageView(getActivity());
+                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+                    layoutParams.weight = 1;
+                    foodImageView.setLayoutParams(layoutParams);
+                    Picasso.get().load(ds.child("foodImageURL").getValue().toString()).resize(128, 128).into(foodImageView);
+
+                    TextView infoView = new TextView(getActivity());
+                    LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    layoutParams.setMargins(10, 0, 10, 20);
+                    infoView.setLayoutParams(layoutParams2);
+                    infoView.setText(ds.child("name").getValue().toString() + "\n" + ds.child("description").getValue().toString() + "\n$" + ds.child("price").getValue().toString());
+                    infoView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+
+                    Button addToOrderButton = new Button(getActivity());
+                    addToOrderButton.setText("Add to Order");
+                    addToOrderButton.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    addToOrderButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ((OnRestaurantInformationListener) getActivity()).addToOrder(snapshot);
+                        }
+                    });
+                    infoView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
+
+
+                    ll.addView(foodImageView);
+                    ll.addView(infoView);
+                    ll.addView(addToOrderButton);
+
+
+                    // insert into main view
+                    insertPoint.addView(ll);
+                }
+            }
+            if(insertPoint != null) {
+                insertPoint.invalidate();
+            }
         }
     }
 
@@ -183,15 +202,6 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
         }
     }
 
-    @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
-
-    }
-
-    @Override
-    public void onRemoveButton(int position) {
-
-    }
 
 
     public void setMenuData(DataSnapshot restaurantData){
@@ -207,9 +217,10 @@ public class RestaurantsFragment extends Fragment implements HoldsRestaurantInfo
     }
 
     /**
-     * Interface for demarking that an object holds restaurant information
+     * Interface for marking that an object holds restaurant information
      */
     public interface OnRestaurantInformationListener {
         void onRestaurantInformation(HoldsRestaurantInformation restaurantInformationHolder);
+        void addToOrder(DataSnapshot ds);
     }
 }

@@ -34,11 +34,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class RestaurantActivity extends AppCompatActivity implements RestaurantsFragment.OnRestaurantInformationListener{
+import java.util.ArrayList;
+
+import edu.temple.foodgo.dummy.DummyContent;
+
+public class RestaurantActivity extends AppCompatActivity implements RestaurantsFragment.OnRestaurantInformationListener, OrderFragment.OnListFragmentInteractionListener{
     private FirebaseUser user;
     private DataSnapshot restaurantData;
-    private Fragment restFrag;
+    private Fragment restFrag, orderFrag;
     private String restaurantID;
+
+    private ArrayList<OrderItem> order;
 
 
 
@@ -50,7 +56,10 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
         restaurantID = getIntent().getStringExtra("restaurantID");
 
         restFrag = null;
+        orderFrag = null;
         restaurantData = null;
+
+        order = new ArrayList<OrderItem>();
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         connectFirebaseDatabase();
@@ -79,9 +88,9 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
                             .replace(R.id.container, restFrag)
                             .commit();
                 }else if(position == 1){
-                    restFrag = null;
+                    orderFrag = OrderFragment.newInstance(1);
                     getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.container, PlaceholderFragment.newInstance("Your order will be displayed here"))
+                            .replace(R.id.container, orderFrag)
                             .commit();
                 }
             }
@@ -125,6 +134,23 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
         restaurantInformationHolder.setRestaurantInformation(restaurantData);
     }
 
+
+
+
+
+    @Override
+    public void onRemoveButton(int position) {
+        order.remove(position);
+    }
+
+    @Override
+    public ArrayList<OrderItem> getOrder() {
+        return order;
+    }
+
+    public void addToOrder(DataSnapshot item){
+        order.add(new OrderItem(item));
+    }
 
     private static class MyAdapter extends ArrayAdapter<String> implements ThemedSpinnerAdapter {
         private final ThemedSpinnerAdapter.Helper mDropDownHelper;
@@ -227,5 +253,8 @@ public class RestaurantActivity extends AppCompatActivity implements Restaurants
         }
     }
 
+    public DataSnapshot getRestaurantData(){
+        return restaurantData;
+    }
 
 }
