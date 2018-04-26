@@ -3,6 +3,7 @@ package edu.temple.foodgo;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -59,30 +60,12 @@ public class QRScanActivity extends AppCompatActivity {
     }
 
     public void setupCamera() {
-        cameraSource = new CameraSource.Builder(getApplicationContext(), detector)
-                .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(500, 500)
-                .setRequestedFps(15.0f)
-                .build();
+
 
         ((SurfaceView) cameraView).getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                try {
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
-                        return;
-                    }
-                    cameraSource.start(((SurfaceView) cameraView).getHolder());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                startCamera();
             }
 
             @Override
@@ -94,6 +77,38 @@ public class QRScanActivity extends AppCompatActivity {
                 cameraSource.stop();
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 4){
+            startCamera();
+        }
+    }
+
+    private void startCamera(){
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(QRScanActivity.this,
+                    new String[]{"android.permission.CAMERA"},
+                    4);
+
+            return;
+        }else {
+            cameraSource = new CameraSource.Builder(getApplicationContext(), detector)
+                    .setFacing(CameraSource.CAMERA_FACING_BACK)
+                    .setRequestedPreviewSize(500, 500)
+                    .setRequestedFps(15.0f)
+                    .build();
+            SurfaceView surfaceView = (SurfaceView) cameraView;
+            SurfaceHolder theHolder = surfaceView.getHolder();
+            try {
+                cameraSource.start(theHolder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void connectCameraAndBarcode(){
@@ -126,6 +141,7 @@ public class QRScanActivity extends AppCompatActivity {
                 if(textView.getText().toString().equals(getResources().getString(R.string.QRInfoDefault))){
                     Toast.makeText(QRScanActivity.this, R.string.QRInfoDefault, Toast.LENGTH_LONG).show();
                 }else{
+                    cameraSource.release();
                     Intent intent = new Intent(QRScanActivity.this, RestaurantActivity.class);
                     intent.putExtra("restaurantID", textView.getText().toString());
                     startActivity(intent);

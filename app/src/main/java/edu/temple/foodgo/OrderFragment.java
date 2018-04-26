@@ -142,16 +142,18 @@ public class OrderFragment extends Fragment {
         //DatabaseReference database = FirebaseDatabase.getInstance().getReference();
         DataSnapshot restaurantData = mListener.getRestaurantData();
         DataSnapshot orders = restaurantData.child("orders");
-        String id = Long.toString(orders.getChildrenCount());
+        String id = Long.toString(orders.getChildrenCount() + 1);
         DataSnapshot order = orders.child(id);
         order.child("userID").getRef().setValue(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
         order.child("orderNum").getRef().setValue(id);
         order.child("orderTotal").getRef().setValue(((TextView)view.findViewById(R.id.totalValueView)).getText().toString());
 
+        int i = 0;
         for(OrderItem item: this.order){
-            String index = Long.toString(order.child("food").getChildrenCount());
-            order.child("food").child(index).child("name").getRef().setValue(item.getName());
+            String index = Integer.toString(i);
+            order.child("food").child(index).child("item").getRef().setValue(item.getName());
             order.child("food").child(index).child("price").getRef().setValue(item.getPrice());
+            i++;
         }
 
         Intent intent = new Intent(OrderFragment.this.getContext(), StatusActivity.class);
